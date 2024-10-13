@@ -1,23 +1,24 @@
-import os
-import json
 import inspect
-import tqdm
+import json
+import os
 
 import arc_types
 import constants
 import dsl
-import tests
 import solvers
-
+import tests
+import tqdm
 
 
 def get_data(train=True):
     path = f'../data/{"training" if train else "evaluation"}'
     data = {}
     for fn in os.listdir(path):
+        print(fn)
         with open(f'{path}/{fn}') as f:
             data[fn.rstrip('.json')] = json.load(f)
-    ast = lambda g: tuple(tuple(r) for r in g)
+
+    def ast(g): return tuple(tuple(r) for r in g)
     return {
         'train': {k: [{
             'input': ast(e['input']),
@@ -57,8 +58,8 @@ def test_solvers_formatting(solvers_module, dsl_module):
     with open('constants.py', 'r') as f:
         constants = [c.split(' = ')[0] for c in f.readlines() if ' = ' in c]
     definitions = {
-        function: inspect.getsource(getattr(solvers_module, function)) \
-            for function in get_functions(solvers_module.__file__)
+        function: inspect.getsource(getattr(solvers_module, function))
+        for function in get_functions(solvers_module.__file__)
     }
     dsl_interface = get_functions(dsl_module.__file__)
     n_correct = 0
@@ -80,7 +81,8 @@ def test_solvers_formatting(solvers_module, dsl_module):
                 calls.add(call)
                 assert function in dsl_interface or function in variables
                 assert args[-1] == ')'
-                args = [args[:-1]] if ',' not in args else args[:-1].split(', ')
+                args = [
+                    args[:-1]] if ',' not in args else args[:-1].split(', ')
                 for arg in args:
                     assert any([
                         arg in variables, arg in dsl_interface,
